@@ -8,7 +8,7 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, send_file
 
-PERIOD_SECONDS = 10
+PERIOD_SECONDS = 60
 URL_WAITING_TIME = "https://dxp-fds.flughafen-zuerich.ch/WaitingTimes"
 URL_TIMESTAMP = "http://worldtimeapi.org/api/timezone/Europe/Zurich"
 OUTPUT_FILE = "results.txt"
