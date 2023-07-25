@@ -8,23 +8,21 @@ import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from flask import Flask, send_file
 
-PERIOD_SECONDS = 60
+HEADERS = {
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
+                  "Chrome/113.0.0.0 Safari/537.36"
+}
+
 URL_WAITING_TIME = "https://dxp-fds.flughafen-zuerich.ch/WaitingTimes"
-URL_TIMESTAMP = "http://worldtimeapi.org/api/timezone/Europe/Zurich"
 OUTPUT_FILE = "results.txt"
+PERIOD_SECONDS = 20
 
 
 def fetch_record():
-    timestamp_response = requests.get(URL_TIMESTAMP)
-    timestamp = timestamp_response.json()["datetime"]
-    formatted_timestamp = datetime.datetime.fromisoformat(timestamp).strftime("%Y-%m-%d %H:%M:%S")
-    headers = {
-        "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) "
-                      "Chrome/113.0.0.0 Safari/537.36"
-    }
-    waiting_time_response = requests.get(URL_WAITING_TIME, headers=headers)
+    timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    waiting_time_response = requests.get(URL_WAITING_TIME, headers=HEADERS)
     waiting_time = waiting_time_response.json()["maxWaitingTime"]
-    return formatted_timestamp + " | " + waiting_time + " Minutes"
+    return timestamp + " | " + waiting_time + " Minutes"
 
 
 def write_record(record):
@@ -59,10 +57,12 @@ def plot_endpoint():
         int(val) if "-" not in val else (int(val.split("-")[0]) + int(val.split("-")[1])) // 2 for val in df["Duration"]
     ]
 
+    plt.figure(figsize=(15, 10))
     plt.plot(df["Timestamp"], df["Duration"])
     plt.xlabel("Time")
-    plt.ylabel("Duration (Minutes)")
+    plt.ylabel("Duration [min]")
     plt.title("Waiting time at Zurich Airport")
+    plt.grid()
 
     # Save the plot to a BytesIO buffer
     buffer = io.BytesIO()
